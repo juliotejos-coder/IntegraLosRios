@@ -987,26 +987,19 @@ JARDINES.forEach(j => {
   card.innerHTML = `
     <h3>${j.nombre}</h3>
     <p>
-<div class="card-content">
-  <div class="row"><strong>Comuna:</strong><span>${j.comuna}</span></div>
-  <div class="row"><strong>Dirección:</strong><span>${j.direccion}</span></div>
-  <div class="row"><strong>Inicio:</strong><span>${j.jornada}</span></div>
-  <div class="row"><strong>Correo:</strong><span>${j.correo}</span></div>
-  <div class="row"><strong>Fono:</strong><span>${j.fono}</span></div>
-  <div class="row"><strong>Celular:</strong><span>${j.celular}</span></div>
-
-  <div class="programa">
-    <span class="badge badge-program" data-tip="${TARDES_TIP}">
-      ${j.tardes ? "Con" : "Sin"} Tardes de Juego en mi Jardín
-    </span>
-  </div>
-
-  <div class="acciones">
-    <a class="btn" href="${j.maps}" target="_blank">
-      📍 Ingresar a Google Maps
-    </a>
-  </div>
-</div>
+    <strong>Comuna:</strong> ${j.comuna}<br>
+      <strong>Dirección:</strong> ${j.direccion}<br>
+      <strong>Inicio Jornada:</strong> ${j.jornada}<br>
+      <strong>Correo:</strong> ${j.correo}<br>
+      <strong>Fono:</strong> ${j.fono}<br>
+      <strong>Celular institucional:</strong> ${j.celular}<br>
+      <span class="badge badge-program" data-tip="${TARDES_TIP}">
+        ${j.tardes ? "Con" : "Sin"} Tardes de Juego en mi Jardín
+      </span><br>
+      <a class="btn" href="${j.maps}" target="_blank">📍 Ingresar a Google Maps</a>
+    </p>`;
+  grid.appendChild(card);
+});
 
 /* ============================================================
    FILTRO DE COMUNAS
