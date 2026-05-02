@@ -976,14 +976,14 @@ const TARDES_TIP = "Es un programa de extensión horaria de Fundación Integra q
    ============================================================ */
 
 // Comunas únicas en orden
-const COMUNAS = ["Todas", ...new Set(JARDINES.map(j => j.comuna))];
+const COMUNAS = ["Todos", ...new Set(JARDINES.map(j => j.comuna))];
 
 // Menú
 const menu = document.getElementById("topmenu");
 COMUNAS.forEach(c => {
   const btn = document.createElement("button");
   btn.textContent = c;
-  if (c === "Todas") btn.classList.add("active");
+  if (c === "Todos") btn.classList.add("active");
   btn.onclick = () => filtrar(c, btn);
   menu.appendChild(btn);
 });
@@ -1025,7 +1025,7 @@ function filtrar(comuna, btnActivo) {
   if (btnActivo) btnActivo.classList.add("active");
 
   document.querySelectorAll(".card").forEach(card => {
-    const visible = (comuna === "Todas" || card.dataset.comuna === comuna);
+    const visible = (comuna === "Todos" || card.dataset.comuna === comuna);
     card.style.display = visible ? "block" : "none";
   });
 }
