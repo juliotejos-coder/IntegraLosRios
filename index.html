@@ -54,26 +54,11 @@ body {
   width: 100%;
   overflow: hidden;
   background: #111;
-  /* Altura fija relativa al ancho: se adapta a cualquier imagen */
-  height: 30vw;
-  min-height: 180px;
-  max-height: 320px;
 }
 
-@media (max-width: 900px) {
-  .topbanner { height: 32vw; }
-}
-
-@media (max-width: 600px) {
-  .topbanner { height: 52vw; }
-}
-
-/* La imagen siempre llena el contenedor sin franjas */
 .topbanner img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  height: auto;
   display: block;
 }
 
