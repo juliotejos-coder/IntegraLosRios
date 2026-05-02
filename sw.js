@@ -1,4 +1,4 @@
-const CACHE_NAME = 'integra-losrios-v1';
+const CACHE_NAME = 'integra-losrios-v12';
 const ASSETS = [
   './',
   './index.html',
