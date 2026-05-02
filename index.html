@@ -47,55 +47,45 @@ body {
 }
 
 /* =============================================
-   BANNER SUPERIOR — 100% responsive
-   Relación de aspecto fluida: 4:1 escritorio →
-   2.2:1 tablet → 1.8:1 móvil. Sin franjas negras
-   ni recortes: object-fit:cover llena siempre.
+   BANNER SUPERIOR — completamente responsive
+   JS detecta la imagen real y aplica su proporción
+   exacta en escritorio. En tablet/móvil se fija
+   una altura en vw y object-fit:cover recorta
+   centrado. CERO franjas negras en cualquier img.
    ============================================= */
 .topbanner {
   position: relative;
   width: 100%;
   overflow: hidden;
-  /* aspect-ratio adapta la altura al ancho real disponible */
-  aspect-ratio: 4 / 1;
-  background: #111;           /* fallback mientras carga la imagen */
+  /* height lo pone JS; este padding es el fallback */
+  padding-bottom: 25%;
+  background: #111;
 }
 
-/* Fondo desenfocado relleno total (elimina franjas negras) */
-.topbanner::before {
-  content: "";
-  position: absolute;
-  inset: -5%;                 /* ligeramente mayor para que blur no deje bordes */
-  background: url("banner.png") center / cover no-repeat;
-  filter: blur(24px) brightness(0.5);
-  z-index: 1;
+/* En tablet se fija altura proporcional al ancho */
+@media (max-width: 900px) {
+  .topbanner {
+    padding-bottom: 0 !important;
+    height: 30vw !important;
+  }
+}
+/* En móvil altura generosa para ver bien el banner */
+@media (max-width: 600px) {
+  .topbanner {
+    padding-bottom: 0 !important;
+    height: 45vw !important;
+  }
 }
 
-/* Imagen principal: siempre llena el contenedor */
+/* La imagen ocupa todo el contenedor siempre */
 .topbanner img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;          /* recorta inteligentemente, sin deformar */
-  object-position: center 20%; /* sube el punto focal (rostros suelen estar arriba) */
+  object-fit: cover;
+  object-position: center top;
   display: block;
-  z-index: 2;
-}
-
-/* Tablet: relación un poco más alta */
-@media (max-width: 900px) {
-  .topbanner { aspect-ratio: 3 / 1; }
-}
-
-/* Móvil: más altura relativa para que se vea bien */
-@media (max-width: 600px) {
-  .topbanner {
-    aspect-ratio: 2.2 / 1;
-  }
-  .topbanner img {
-    object-position: center 15%;
-  }
 }
 
 /* =============================================
@@ -380,10 +370,12 @@ body.dark .info-icon .tooltip { background: rgba(255,255,255,.12); }
 <body>
 
 <!-- =============================================
-     BANNER  →  sube banner.png al repositorio
+     BANNER — JS detecta dimensiones reales de la
+     imagen y aplica su proporción exacta en escritorio.
+     En tablet/móvil CSS recorta centrado con cover.
      ============================================= -->
 <div class="topbanner" id="banner">
-  <img src="banner.png" alt="Banner Integra Región de Los Ríos">
+  <img src="banner.png" alt="Banner Integra Región de Los Ríos" id="bannerImg">
 </div>
 
 <!-- =============================================
@@ -1030,7 +1022,7 @@ JARDINES.forEach(j => {
       <span class="lbl">Celular:</span>    <span class="val">${j.celular}</span>
     </div>
     <span class="badge badge-program" data-tip="${TARDES_TIP}">
-      ${j.tardes ? "Con" : "Sin"} Tardes de Juego en mi Jardín
+      ${j.tardes ? "✅ Con" : "❌ Sin"} Tardes de Juego en mi Jardín
     </span>
     <a class="btn" href="${j.maps}" target="_blank">📍 Ingresar a Google Maps</a>`;
   grid.appendChild(card);
@@ -1200,6 +1192,39 @@ if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
 
   // Tap fuera oculta el tooltip
   document.addEventListener("click", hide);
+})();
+
+
+/* ============================================================
+   BANNER RESPONSIVE — detecta dimensiones reales de la imagen
+   y ajusta el contenedor en escritorio sin franjas negras.
+   En tablet/móvil el CSS ya fija la altura con vw.
+   ============================================================ */
+(function () {
+  var img    = document.getElementById("bannerImg");
+  var banner = document.getElementById("banner");
+  if (!img || !banner) return;
+
+  function applyRatio() {
+    if (window.innerWidth > 900) {
+      if (img.naturalWidth > 0) {
+        var ratio = (img.naturalHeight / img.naturalWidth) * 100;
+        banner.style.paddingBottom = ratio + "%";
+        banner.style.height = "auto";
+      }
+    } else {
+      banner.style.paddingBottom = "";
+      banner.style.height = "";
+    }
+  }
+
+  if (img.complete && img.naturalWidth > 0) {
+    applyRatio();
+  } else {
+    img.addEventListener("load", applyRatio);
+  }
+
+  window.addEventListener("resize", applyRatio);
 })();
 
 if ("serviceWorker" in navigator) {
