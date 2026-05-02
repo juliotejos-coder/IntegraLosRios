@@ -54,7 +54,7 @@ body {
   width: 100%;
   overflow: hidden;
   background: #000;
-  max-height: 220px;          /* altura máxima del banner */
+  height: clamp(160px, 25vw, 280px); /* escala proporcional con el ancho */
 }
 /* fondo difuminado con la misma imagen */
 .topbanner::before {
@@ -71,14 +71,12 @@ body {
   z-index: 2;
   width: 100%;
   height: 100%;
-  max-height: 220px;
   object-fit: cover;          /* llena el espacio sin deformarse */
-  object-position: center;
+  object-position: center top;
   display: block;
 }
 @media (max-width: 768px) {
-  .topbanner,
-  .topbanner img { max-height: 160px; }
+  .topbanner { height: 160px; }
   .topbanner::before { display: none; }
 }
 
@@ -121,30 +119,68 @@ body.dark .topmenu button.active      { background: var(--orange); border-color:
    ============================================= */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px;
 }
 .card {
   background: var(--card);
-  padding: 20px;
+  padding: 16px;
   border-radius: 14px;
   box-shadow: 0 4px 10px rgba(0,0,0,.12);
   border-left: 6px solid var(--accent);
   animation: fadeZoom .6s ease forwards;
-  overflow: hidden;           /* evita desbordamiento */
-  word-break: break-word;     /* rompe palabras largas (emails) */
+  overflow: hidden;
+  word-break: break-word;
   overflow-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 @keyframes fadeZoom {
   from { opacity: 0; transform: scale(.96); }
   to   { opacity: 1; transform: scale(1); }
 }
-.card h3  { margin-bottom: 10px; }
-.card p   { line-height: 1.75; font-size: 14px; }
-.card strong { white-space: nowrap; }
+.card h3 { font-size: 15px; margin: 0; }
 
-@media (max-width: 600px) { .card { padding: 16px; } }
+/* Tabla interna de datos: 2 columnas (label | valor) */
+.card-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.card-info .lbl {
+  font-weight: bold;
+  white-space: nowrap;
+  color: var(--text);
+}
+.card-info .val {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Badge tardes */
+.badge-program {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 13px;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .grid { padding: 10px; gap: 10px; }
+  .card { padding: 13px; }
+  .card h3 { font-size: 14px; }
+  .card-info { font-size: 12px; }
+}
 
 /* =============================================
    BOTÓN GOOGLE MAPS
@@ -163,45 +199,23 @@ body.dark .topmenu button.active      { background: var(--orange); border-color:
 body:not(.dark) .btn:hover { background: #5587D4; }
 body.dark       .btn:hover { background: #FFA455; color: #000; }
 
-/* =============================================
-   BADGE PROGRAMA
-   ============================================= */
-.badge-program {
-  display: inline-block;
-  margin-bottom: 10px;
-  position: relative;
-  cursor: help;
-}
-.badge-program::after {
-  content: attr(data-tip);
-  position: absolute;
-  left: 0;
-  bottom: 130%;
-  width: 260px;
-  background: rgba(0,0,0,.85);
+/* Tooltip flotante global — posicionado por JS, no atrapado en .card */
+#tip-box {
+  display: none;
+  position: fixed;
+  z-index: 99998;
+  max-width: 280px;
+  background: rgba(20,20,20,.95);
   color: #fff;
-  padding: 10px 12px;
+  padding: 11px 14px;
+  border-radius: 11px;
   font-size: 12px;
-  border-radius: 10px;
-  line-height: 1.4;
-  opacity: 0;
+  line-height: 1.55;
+  box-shadow: 0 6px 20px rgba(0,0,0,.4);
   pointer-events: none;
-  transform: translateY(6px);
-  transition: opacity .25s ease, transform .25s ease;
-  z-index: 9999;
+  white-space: normal;
 }
-.badge-program:hover::after,
-.badge-program:focus::after { opacity: 1; transform: translateY(0); }
-
-@media (max-width: 768px) {
-  .badge-program::after {
-    left: 50% !important;
-    right: auto !important;
-    width: 90vw;
-    max-width: 320px;
-    transform: translateX(-50%) translateY(0) !important;
-  }
-}
+#tip-box.visible { display: block; }
 
 /* =============================================
    BANNER DE INSTALACIÓN PWA
@@ -363,6 +377,9 @@ body.dark .info-icon .tooltip { background: rgba(255,255,255,.12); }
      GRILLA DE JARDINES (generada por JS)
      ============================================= -->
 <div class="grid" id="grid"></div>
+
+<!-- Tooltip flotante global (no queda atrapado en .card) -->
+<div id="tip-box"></div>
 
 <!-- =============================================
      BANNER PWA — instalación en Android / iOS
@@ -986,20 +1003,21 @@ JARDINES.forEach(j => {
   card.dataset.comuna = j.comuna;
   card.innerHTML = `
     <h3>${j.nombre}</h3>
-    <p>
-    <strong>Comuna:</strong> ${j.comuna}<br>
-      <strong>Dirección:</strong> ${j.direccion}<br>
-      <strong>Inicio Jornada:</strong> ${j.jornada}<br>
-      <strong>Correo:</strong> ${j.correo}<br>
-      <strong>Fono:</strong> ${j.fono}<br>
-      <strong>Celular institucional:</strong> ${j.celular}<br>
-      <span class="badge badge-program" data-tip="${TARDES_TIP}">
-        ${j.tardes ? "Con" : "Sin"} Tardes de Juego en mi Jardín
-      </span><br>
-      <a class="btn" href="${j.maps}" target="_blank">📍 Ingresar a Google Maps</a>
-    </p>`;
+    <div class="card-info">
+      <span class="lbl">Comuna:</span>     <span class="val">${j.comuna}</span>
+      <span class="lbl">Dirección:</span>  <span class="val">${j.direccion}</span>
+      <span class="lbl">Jornada:</span>    <span class="val">${j.jornada}</span>
+      <span class="lbl">Correo:</span>     <span class="val">${j.correo}</span>
+      <span class="lbl">Fono:</span>       <span class="val">${j.fono}</span>
+      <span class="lbl">Celular:</span>    <span class="val">${j.celular}</span>
+    </div>
+    <span class="badge badge-program" data-tip="${TARDES_TIP}">
+      ${j.tardes ? "Con" : "Sin"} Tardes de Juego en mi Jardín
+    </span>
+    <a class="btn" href="${j.maps}" target="_blank">📍 Ingresar a Google Maps</a>`;
   grid.appendChild(card);
 });
+
 
 /* ============================================================
    FILTRO DE COMUNAS
@@ -1112,8 +1130,60 @@ if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
 
 
 /* ============================================================
-   SERVICE WORKER — registra sw.js del repositorio
+   TOOLTIP FLOTANTE — "Con/Sin Tardes de Juego"
+   Usa un div fixed para no quedar atrapado en .card
    ============================================================ */
+(function () {
+  const tip = document.getElementById("tip-box");
+
+  function show(el) {
+    tip.textContent = el.dataset.tip;
+    tip.classList.add("visible");
+    position(el);
+  }
+  function hide() {
+    tip.classList.remove("visible");
+  }
+
+  function position(el) {
+    const rect    = el.getBoundingClientRect();
+    const tipW    = 280;
+    const margin  = 8;
+    const gap     = 10;  // espacio entre badge y tooltip
+
+    // Preferencia: aparecer ARRIBA del badge
+    let top  = rect.top - tip.offsetHeight - gap;
+    let left = rect.left;
+
+    // Si no cabe arriba → aparece abajo
+    if (top < margin) top = rect.bottom + gap;
+
+    // No salirse por la derecha
+    if (left + tipW > window.innerWidth - margin) {
+      left = window.innerWidth - tipW - margin;
+    }
+    // No salirse por la izquierda
+    if (left < margin) left = margin;
+
+    tip.style.top  = top  + "px";
+    tip.style.left = left + "px";
+  }
+
+  document.querySelectorAll(".badge-program").forEach(el => {
+    // Desktop: hover
+    el.addEventListener("mouseenter", () => show(el));
+    el.addEventListener("mouseleave", hide);
+    // Móvil: tap
+    el.addEventListener("click", e => {
+      e.stopPropagation();
+      tip.classList.contains("visible") ? hide() : show(el);
+    });
+  });
+
+  // Tap fuera oculta el tooltip
+  document.addEventListener("click", hide);
+})();
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js")
