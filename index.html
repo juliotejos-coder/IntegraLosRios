@@ -47,37 +47,55 @@ body {
 }
 
 /* =============================================
-   BANNER SUPERIOR  →  carga banner.png del repo
+   BANNER SUPERIOR — 100% responsive
+   Relación de aspecto fluida: 4:1 escritorio →
+   2.2:1 tablet → 1.8:1 móvil. Sin franjas negras
+   ni recortes: object-fit:cover llena siempre.
    ============================================= */
 .topbanner {
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: #000;
-  height: clamp(160px, 25vw, 280px); /* escala proporcional con el ancho */
+  /* aspect-ratio adapta la altura al ancho real disponible */
+  aspect-ratio: 4 / 1;
+  background: #111;           /* fallback mientras carga la imagen */
 }
-/* fondo difuminado con la misma imagen */
+
+/* Fondo desenfocado relleno total (elimina franjas negras) */
 .topbanner::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -5%;                 /* ligeramente mayor para que blur no deje bordes */
   background: url("banner.png") center / cover no-repeat;
-  filter: blur(28px) brightness(0.55);
-  transform: scale(1.12);
+  filter: blur(24px) brightness(0.5);
   z-index: 1;
 }
+
+/* Imagen principal: siempre llena el contenedor */
 .topbanner img {
-  position: relative;
-  z-index: 2;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;          /* llena el espacio sin deformarse */
-  object-position: center top;
+  object-fit: cover;          /* recorta inteligentemente, sin deformar */
+  object-position: center 20%; /* sube el punto focal (rostros suelen estar arriba) */
   display: block;
+  z-index: 2;
 }
-@media (max-width: 768px) {
-  .topbanner { height: 160px; }
-  .topbanner::before { display: none; }
+
+/* Tablet: relación un poco más alta */
+@media (max-width: 900px) {
+  .topbanner { aspect-ratio: 3 / 1; }
+}
+
+/* Móvil: más altura relativa para que se vea bien */
+@media (max-width: 600px) {
+  .topbanner {
+    aspect-ratio: 2.2 / 1;
+  }
+  .topbanner img {
+    object-position: center 15%;
+  }
 }
 
 /* =============================================
